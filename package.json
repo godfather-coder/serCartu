@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@faker-js/faker": "^9.2.0",
+    "axios": "^1.7.7",
+    "body-parser": "^1.20.3",
+    "express": "^4.21.1",
+    "faker": "^6.6.6",
+    "js2xmlparser": "^5.0.0",
+    "json-server": "^1.0.0-beta.3",
+    "jsonserver": "^0.1.6",
+    "xml2js": "^0.6.2"
+  }
+}
