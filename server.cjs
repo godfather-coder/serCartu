@@ -64,6 +64,7 @@ app.post('/users', async (req, res) => {
             return res.status(400).json({error: 'Invalid XML format'});
         }
         const pin = result.Envelope.Body.ListCustomers.Query.PIN;
+        const tax = result.Envelope.Body.ListCustomers.Query.TaxpayerId;
 
         if (!pin) {
             return res.status(400).json({error: 'PIN not found in the request'});
@@ -169,16 +170,7 @@ app.post('/users', async (req, res) => {
     });
 });
 
-app.get('/companies', async (req, res) => {
-    const {tax_number} = req.query
-    try {
-        const companyResponse = await axios.get('http://localhost:3000/companies?taxNumber=' + tax_number);
-        res.json(companyResponse.data);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({error: 'Failed to fetch companies'});
-    }
-});
+
 
 const PORT = 3001;
 app.listen(PORT, () => {
