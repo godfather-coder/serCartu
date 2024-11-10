@@ -65,14 +65,20 @@ app.post('/users', async (req, res) => {
         }
         const pin = result.Envelope.Body.ListCustomers.Query.PIN;
         const tax = result.Envelope.Body.ListCustomers.Query.TaxpayerId;
+    
+        
 
-        if (!pin) {
-            return res.status(400).json({error: 'PIN not found in the request'});
+        if (!pin && !tax) {
+            return res.status(400).json({error: 'PIN or TaxPayerId not found in the request'});
         }
         console.log("PIN: " + pin)
         let user;
         try {
-            const userResponse = await axios.get(`http://localhost:3000/users?personalNumber=${pin}`);
+
+            const url = pin?`http://localhost:3000/users?personalNumber=${pin}`:
+                            `http://localhost:3000/companies?taxNumber=${tax}`
+            const userResponse = await axios.get(url);
+
             user1 = userResponse.data;
             user = user1[0]
             console.log(user)
@@ -83,6 +89,44 @@ app.post('/users', async (req, res) => {
         if (user1.length === 0) {
             return res.status(500).json({error: 'Failed to fetch user data'});
         }
+        const EntityUser = {
+            Type: 'Taxpayer',
+            PIN: pin,  // Use the extracted PIN
+            Name: {
+                FirstName: {
+                    ValueGeo: user.name,
+                    ValueLat: 'AVTANDYL'
+                },
+                LastName: {
+                    ValueGeo: user.surname,
+                    ValueLat: 'VERULEISHVILI'
+                },
+                FathersName: {
+                    ValueGeo: 'მერაბი',
+                    ValueLat: 'ZURABI'
+                }
+            },
+            Citizenship: 'GE',
+            DoubleCitizenshipCountry: 'NN',
+            Gender: 'Male',
+            BirthPlaceDateAndCountry: {
+                Date: '1986-11-20T00:00:00',
+                Country: 'GE',
+                Place: 'თბილისი'
+            },
+            Subtype2: 117,
+            DisabilitiesTypeId: 1
+        }
+
+        const EntityCompany = {
+            Type: 'Legal',
+            Subtype:6,
+            LegalForm: "LLC",
+            FoundationDate: "1997-03-21T00:00:00",
+            SubTyoe2: "264",
+            OrganizationTypeId: "შპს"
+        }
+
         const responseData = {
             Envelope: {
                 Header: {
@@ -100,7 +144,7 @@ app.post('/users', async (req, res) => {
                                 Id: 613949,
                                 Version: 19,
                                 Name: {
-                                    ValueGeo: `${user.name} ${user.surname}`,
+                                    ValueGeo: pin? `${user.name} ${user.surname}` : user.clientName,
                                     ValueLat: 'AVTANDYL VERULEISHVILI'
                                 },
                                 Status: user.status,
@@ -116,41 +160,14 @@ app.post('/users', async (req, res) => {
                                 CustomerSince: '2023-05-16T00:00:00',
                                 Note: 'FATCA. CRS (14/12/2023)',
                                 TaxDetails: {
-                                    TaxpayerId: user.personalNumber,
+                                    TaxpayerId: pin ? user.personalNumber : user.taxNumber,
                                     City: 'თბილისი',
                                     Organization: 'შემოსავლების სამსახური',
                                     RegistrationDate: '2012-12-15T00:00:00',
                                     Country: 'GE',
                                     RegistrationNumber: 1010010182
                                 },
-                                Entity: {
-                                    Type: 'Taxpayer',
-                                    PIN: pin,  // Use the extracted PIN
-                                    Name: {
-                                        FirstName: {
-                                            ValueGeo: user.name,
-                                            ValueLat: 'AVTANDYL'
-                                        },
-                                        LastName: {
-                                            ValueGeo: user.surname,
-                                            ValueLat: 'VERULEISHVILI'
-                                        },
-                                        FathersName: {
-                                            ValueGeo: 'მერაბი',
-                                            ValueLat: 'ZURABI'
-                                        }
-                                    },
-                                    Citizenship: 'GE',
-                                    DoubleCitizenshipCountry: 'NN',
-                                    Gender: 'Male',
-                                    BirthPlaceDateAndCountry: {
-                                        Date: '1986-11-20T00:00:00',
-                                        Country: 'GE',
-                                        Place: 'თბილისი'
-                                    },
-                                    Subtype2: 117,
-                                    DisabilitiesTypeId: 1
-                                },
+                                Entity: pin ? EntityUser : EntityCompany,
                                 CountryOfResidence: 'GE',
                                 ChannelId: 0,
                                 AmlStatus: 'Ok',

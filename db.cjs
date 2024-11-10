@@ -18,7 +18,7 @@ const users = Array.from({ length: 500 }, () => ({
     personalNumber: generateUniqueNumber(),
     name: faker.person.firstName(),
     surname: faker.person.lastName(),
-    status: faker.helpers.arrayElement(['მოქმედი', 'უარყოფილი', 'გამოყენებული', 'ვადაგასული', 'გაუქმებული', 'დახურული']),
+    status: faker.helpers.arrayElement(["Open", "Inactive", "Closed", "Cancelled"]),
     phoneNumber: faker.phone.number()
 }));
 
@@ -27,12 +27,15 @@ const companies = Array.from({ length: 500 }, () => ({
     taxNumber: generateUniqueNumber(),
     legPerson: faker.person.firstName() + " " + faker.person.firstName(),
     legPersonTax: generateUniqueNumber(),
-    status: faker.helpers.arrayElement(['მოქმედი', 'უარყოფილი', 'გამოყენებული', 'ვადაგასული', 'გაუქმებული', 'დახურული']),
+    status: faker.helpers.arrayElement(["Open", "Inactive", "Closed", "Cancelled"]),
     phoneNumber: faker.phone.number()
 }));
 
-const sandro = {personalNumber: 38001046165, name: "სანდრო", surname: 'ღუღუნიშვილი', status: "მოქმედი", phoneNumber: 598414141}
+const sandro = {personalNumber: 38001046165, name: "სანდრო", surname: 'ღუღუნიშვილი', status: "Open", phoneNumber: 598414141}
+const andro = {personalNumber: 54801063466, name: "ანდრო", surname: 'ბიბიაშვილი', status: "Open", phoneNumber: 591750895}
+
 users.unshift(sandro)
+users.unshift(andro)
 const data = { users, companies };
 
 fs.writeFileSync('db.json', JSON.stringify(data, null, 2), 'utf-8');

@@ -8,6 +8,7 @@
     "js2xmlparser": "^5.0.0",
     "json-server": "^1.0.0-beta.3",
     "jsonserver": "^0.1.6",
+    "nodemon": "^3.1.7",
     "xml2js": "^0.6.2"
   }
 }
