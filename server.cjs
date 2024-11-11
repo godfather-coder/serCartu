@@ -3,9 +3,13 @@ const bodyParser = require('body-parser');
 const axios = require('axios');
 const xml2js = require('xml2js');
 
+const cors = require('cors');
+
+
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors({ origin: 'http://localhost:5173' }));
 
 const validateMessageRequest = (req, res, next) => {
 
