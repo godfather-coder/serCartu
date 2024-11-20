@@ -6,7 +6,6 @@ const xml2js = require('xml2js');
 const cors = require('cors');
 
 
-
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
@@ -59,6 +58,7 @@ function jsonToXmlConversion(json) {
     const builder = new xml2js.Builder();
     return builder.buildObject(json);
 }
+
 app.use('/users', bodyParser.text({type: 'application/xml'}));
 app.post('/users', async (req, res) => {
     const xmlData = req.body;
@@ -69,8 +69,7 @@ app.post('/users', async (req, res) => {
         }
         const pin = result.Envelope.Body.ListCustomers.Query.PIN;
         const tax = result.Envelope.Body.ListCustomers.Query.TaxpayerId;
-    
-        
+
 
         if (!pin && !tax) {
             return res.status(400).json({error: 'PIN or TaxPayerId not found in the request'});
@@ -79,8 +78,8 @@ app.post('/users', async (req, res) => {
         let user;
         try {
 
-            const url = pin?`http://localhost:3000/users?personalNumber=${pin}`:
-                            `http://localhost:3000/companies?taxNumber=${tax}`
+            const url = pin ? `http://localhost:3000/users?personalNumber=${pin}` :
+                `http://localhost:3000/companies?taxNumber=${tax}`
             const userResponse = await axios.get(url);
 
             user1 = userResponse.data;
@@ -94,37 +93,102 @@ app.post('/users', async (req, res) => {
             return res.status(404).json({message: 'user can not be found'});
         }
         const EntityUser = {
-            Type: 'Taxpayer',
-            PIN: pin,  // Use the extracted PIN
-            Name: {
-                FirstName: {
-                    ValueGeo: user.name,
-                    ValueLat: 'AVTANDYL'
+            "Envelope": {
+                "Header": {
+                    "ResponseHeaders": {
+                        "RequestId": "123",
+                        "Timestamp": "2024-11-19T15:09:23.1190615+04:00",
+                        "IsCopy": false,
+                        "ApiVersion": "9.16.1.0"
+                    }
                 },
-                LastName: {
-                    ValueGeo: user.surname,
-                    ValueLat: 'VERULEISHVILI'
-                },
-                FathersName: {
-                    ValueGeo: 'მერაბი',
-                    ValueLat: 'ZURABI'
+                "Body": {
+                    "ListCustomersResponse": {
+                        "Result": {
+                            "Customer": {
+                                "Id": "851375",
+                                "Version": "23",
+                                "Name": {
+                                    "ValueGeo": user.name + " " + user.surname,
+                                    "ValueLat": "AVTANDYL VERULEISHVILI"
+                                },
+                                "Status": "Open",
+                                "DeptId": "0",
+                                "BranchId": "0",
+                                "IsBankCustomer": true,
+                                "IsInsider": false,
+                                "IsResident": true,
+                                "IsCompleted": true,
+                                "IsAuthorized": true,
+                                "Country": "GE",
+                                "ResponsibleUserId": "2090",
+                                "CustomerSince": "2023-05-16T00:00:00",
+                                "Note": "FATCA. CRS (14/12/2023)",
+                                "TaxDetails": {
+                                    "TaxpayerId": user.personalNumber,
+                                    "City": "თბილისი",
+                                    "Organization": "შემოსავლების სამსახური",
+                                    "RegistrationDate": "2012-12-15T00:00:00",
+                                    "Country": "GE",
+                                    "RegistrationNumber": "01010010182"
+                                },
+                                "ContactInfo": {
+                                    "Phone": "1",
+                                    "MobilePhone": user.phoneNumber,
+                                    "SMSPhone": "+995" + user.phoneNumber,
+                                    "Email": "AVTO_VERULA@HOTMAIL.COM",
+                                    "PhoneRenewDate": "2024-11-18T12:45:00",
+                                    "IsSMSPhoneAuthorized": true,
+                                    "SMSPhoneDraft": "+995595199495",
+                                    "SMSPhoneRenewDate": "2024-11-18T12:45:00"
+                                },
+                                "Entity": {
+                                    "Type": "Taxpayer",
+                                    "PIN":  user.personalNumber,
+                                    "Name": {
+                                        "FirstName": {
+                                            "ValueGeo": user.name,
+                                            "ValueLat": "AVTANDYL"
+                                        },
+                                        "LastName": {
+                                            "ValueGeo": user.surname,
+                                            "ValueLat": "VERULEISHVILI"
+                                        },
+                                        "FathersName": {
+                                            "ValueGeo": "ზურაბი",
+                                            "ValueLat": "ZURABI"
+                                        }
+                                    },
+                                    "Citizenship": "GE",
+                                    "DoubleCitizenshipCountry": "NN",
+                                    "Gender": "Male",
+                                    "BirthPlaceDateAndCountry": {
+                                        "Date": "1983-04-14T00:00:00",
+                                        "Country": "GE",
+                                        "Place": "თბილისი"
+                                    },
+                                    "MaritalStatus": "Married",
+                                    "Subtype2": "117",
+                                    "DisabilitiesTypeId": "1"
+                                },
+                                "CountryOfResidence": "GE",
+                                "ChannelId": "0",
+                                "AmlStatus": "Ok",
+                                "IsSmsSignatureEnabled": true,
+                                "CustomershipKind": "AccountOwner",
+                                "IsFetchedFromCra": false
+                            }
+                        },
+                        "LastIdEvaluated": null
+                    }
                 }
-            },
-            Citizenship: 'GE',
-            DoubleCitizenshipCountry: 'NN',
-            Gender: 'Male',
-            BirthPlaceDateAndCountry: {
-                Date: '1986-11-20T00:00:00',
-                Country: 'GE',
-                Place: 'თბილისი'
-            },
-            Subtype2: 117,
-            DisabilitiesTypeId: 1
+            }
         }
+
 
         const EntityCompany = {
             Type: 'Legal',
-            Subtype:6,
+            Subtype: 6,
             LegalForm: "LLC",
             FoundationDate: "1997-03-21T00:00:00",
             SubTyoe2: "264",
@@ -148,7 +212,7 @@ app.post('/users', async (req, res) => {
                                 Id: 613949,
                                 Version: 19,
                                 Name: {
-                                    ValueGeo: pin? `${user.name} ${user.surname}` : user.clientName,
+                                    ValueGeo: pin ? `${user.name} ${user.surname}` : user.clientName,
                                     ValueLat: 'AVTANDYL VERULEISHVILI'
                                 },
                                 Status: user.status,
@@ -171,7 +235,7 @@ app.post('/users', async (req, res) => {
                                     Country: 'GE',
                                     RegistrationNumber: 1010010182
                                 },
-                                Entity: pin ? EntityUser : EntityCompany,
+                                Entity: pin ? {} : EntityCompany,
                                 CountryOfResidence: 'GE',
                                 ChannelId: 0,
                                 AmlStatus: 'Ok',
@@ -185,12 +249,11 @@ app.post('/users', async (req, res) => {
             }
         };
 
-        const xmlResponse = jsonToXmlConversion(responseData);
+        const xmlResponse = jsonToXmlConversion( pin ? EntityUser : responseData);
         res.setHeader('Content-Type', 'application/xml');
         res.send(xmlResponse);
     });
 });
-
 
 
 const PORT = 3001;
