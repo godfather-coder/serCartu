@@ -87,11 +87,11 @@ app.post('/users', async (req, res) => {
             user = user1[0]
             console.log(user)
         } catch (error) {
-            console.error(error);
+            console.log(error);
             return res.status(500).json({error: 'Failed to fetch user data'});
         }
         if (user1.length === 0) {
-            return res.status(500).json({error: 'Failed to fetch user data'});
+            return res.status(404).json({message: 'user can not be found'});
         }
         const EntityUser = {
             Type: 'Taxpayer',
